@@ -13,3 +13,8 @@ type Title struct {
 	ReleaseDate      string   `json:"release_date"`
 	Runtime          int      `json:"runtime"`
 }
+
+type TitleResponse struct {
+	Page    int     `json:"page"`
+	Results []Title `json:"results"`
+}

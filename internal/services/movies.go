@@ -1,31 +1,16 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/ctheil/pmdb-api/internal/config"
+	"github.com/ctheil/pmdb-api/internal/model"
 )
 
-type Movie struct {
-	OriginalTitle    string   `json:"original_title"`
-	Overview         string   `json:"overview"`
-	Genres           []string `json:"genres"`
-	OriginalLanguage string   `json:"original_language"`
-	PosterPath       string   `json:"poster_path"`
-	Title            string   `json:"title"`
-	Status           string   `json:"status"`
-	IMDB_ID          string   `json:"imdb_id"`
-	Id               int      `json:"id"`
-	ReleaseDate      string   `json:"release_date"`
-	Runtime          int      `json:"runtime"`
-}
-
 type TMDBMoviesResponse struct {
-	Page    int     `json:"page"`
-	Results []Movie `json:"results"`
+	Page    int           `json:"page"`
+	Results []model.Title `json:"results"`
 }
 
 func FetchTrendingMovies() ([]Movie, error) {
@@ -42,19 +27,13 @@ func FetchTrendingMovies() ([]Movie, error) {
 	if err != nil {
 		fmt.Println("Error executing request...")
 		return nil, err
+	} else if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("tmdb returned status: %s", res.Status)
 	}
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("error reading response body")
-		return nil, err
-
-	}
-
 	tmdbMovies := TMDBMoviesResponse{}
-	if err := json.Unmarshal(body, &tmdbMovies); err != nil {
-		fmt.Println("Error unmarshaling data... %e", err)
+	if err := config.ReqToJSON(res.Body, tmdbMovies); err != nil {
 		return nil, err
 	}
 

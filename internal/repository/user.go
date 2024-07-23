@@ -16,7 +16,7 @@ func NewUserRepository(db *sql.DB) UserRepositoryInterface {
 }
 
 func (u *UserRespoitory) InsertUser(post model.PostUser) bool {
-	stmt, err := u.DB.Prepare("INSERT INTO users (username, hashed_pw) VALUES ($1, $2)")
+	stmt, err := u.DB.Prepare(`INSERT INTO users (username, hashed_pw) VALUES ($1, $2)`)
 	if err != nil {
 		log.Println(err)
 		return false
