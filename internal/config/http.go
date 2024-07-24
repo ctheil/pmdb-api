@@ -2,16 +2,21 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
 func ReqToJSON(data io.ReadCloser, out any) error {
-	body, err := io.ReadAll(data)
-	if err != nil {
-		return err
-	}
+	// body, err := io.ReadAll(data)
+	// if err != nil {
+	// 	fmt.Printf("[ReqToJSON]: error in io.Reader...\n")
+	// 	return err
+	// }
 
-	if err := json.Unmarshal(body, &out); err != nil {
+	decoder := json.NewDecoder(data)
+
+	if err := decoder.Decode(&out); err != nil {
+		fmt.Printf("[ReqToJSON]: error unmarshaling...\n")
 		return err
 	}
 
