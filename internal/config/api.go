@@ -16,6 +16,7 @@ type Config struct {
 		BackdropSizes []string `json:"backdrop_sizes"`
 		LogoSizes     []string `json:"logo_sizes"`
 		PosterSizes   []string `json:"poster_sizes"`
+		ProfileSizes  []string `json:"profile_sizes"`
 	} `json:"images"`
 }
 

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ctheil/pmdb-api/internal/config"
+	"github.com/ctheil/pmdb-api/pkg/utils"
 )
 
 type TMDB struct {
@@ -18,6 +18,7 @@ type TMDB struct {
 			BackdropSizes []string `json:"backdrop_sizes"`
 			LogoSizes     []string `json:"logo_sizes"`
 			PosterSizes   []string `json:"poster_sizes"`
+			ProfileSizes  []string `json:"profile_sizes"`
 		} `json:"images"`
 	}
 }
@@ -51,6 +52,6 @@ func (t *TMDB) Setup() error {
 		return err
 	}
 
-	config.ReqToJSON(res.Body, t.Config)
+	utils.ReqToJSON(res.Body, t.Config)
 	return nil
 }
