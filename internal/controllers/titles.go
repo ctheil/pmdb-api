@@ -67,9 +67,12 @@ func (tc *TitleController) GetTrendingTitles(c *gin.Context) {
 
 func (tc *TitleController) GetDetailsById(c *gin.Context) {
 	id := c.Param("id")
-
+	include := c.Query("include") // NOTE: v = video c = credit p = providers
+	includes := tc.Service.ExtractIncludes(include)
 	region := "en-US"
-	details_endpt := "/3/movie/" + id + "?append_to_response=videos%2Ccredits&language=" + region
+
+	details_endpt := "/3/movie/" + id + "?append_to_response=" + includes + "&language=" + region
+
 	details := model.TitleDetails{}
 	if err := tc.Service.TMDBRequest(details_endpt, "GET", nil, &details); err != nil {
 		log.Printf("error in TMDBRequest: %e", err)
@@ -78,6 +81,7 @@ func (tc *TitleController) GetDetailsById(c *gin.Context) {
 		})
 	}
 	tc.Service.BuiltProfilePaths(details.Credits.Cast, 3)
+	tc.Service.BuildProviderLogoPaths(details.WatchProviders, 3)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Success!",

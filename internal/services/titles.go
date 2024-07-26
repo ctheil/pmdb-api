@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/ctheil/pmdb-api/internal/config"
 	"github.com/ctheil/pmdb-api/internal/model"
@@ -34,6 +35,28 @@ func (ts *TitleService) GetDomain(domain string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid domain: %s", domain)
 	}
+}
+
+func (ts *TitleService) ExtractIncludes(includes string) string {
+	if includes == "" {
+		return ""
+	}
+	chars := strings.Split(includes, "")
+	out := ""
+
+	for _, c := range chars {
+		switch c {
+		case "c":
+			out += "credits%2C"
+		case "v":
+			out += "videos%2C"
+		case "p":
+			out += "watch%2Fproviders%2C"
+		}
+	}
+	// trim last '%2C' from end
+	out = out[:len(out)-3]
+	return out
 }
 
 func (ts *TitleService) TMDBRequest(endpoint, method string, reader io.Reader, out interface{}) error {
@@ -88,13 +111,44 @@ func (ts *TitleService) BuildLogoPaths(companies []model.ProductionCompany, size
 }
 
 func (ts *TitleService) BuiltProfilePaths(credits []model.Credit, size int) {
-	fmt.Println("\nBuilding ProfilePath...\n")
 	len := len(ts.Config.Images.ProfileSizes)
 	if size > len {
 		size = len - 1
 	}
 	for i, c := range credits {
+		if c.ProfilePath == "" {
+			credits[i].ProfilePath = ""
+			continue
+		}
 		path := ts.Config.Images.BaseUrl + ts.Config.Images.ProfileSizes[size] + c.ProfilePath
 		credits[i].ProfilePath = path
+	}
+}
+
+func (ts *TitleService) BuildProviderLogoPaths(p model.WatchProviders, size int) {
+	lenSizes := len(ts.Config.Images.LogoSizes)
+	if size > lenSizes {
+		size = lenSizes - 1
+	}
+
+	for regionCode, region := range p.Results {
+		if len(region.Buy) > 0 {
+			for i, provider := range region.Buy {
+				path := ts.Config.Images.BaseUrl + ts.Config.Images.LogoSizes[size] + provider.LogoPath
+				p.Results[regionCode].Buy[i].LogoPath = path
+			}
+		}
+		if len(region.Rent) > 0 {
+			for i, provider := range region.Rent {
+				path := ts.Config.Images.BaseUrl + ts.Config.Images.LogoSizes[size] + provider.LogoPath
+				p.Results[regionCode].Rent[i].LogoPath = path
+			}
+		}
+		if len(region.Flatrate) > 0 {
+			for i, provider := range region.Flatrate {
+				path := ts.Config.Images.BaseUrl + ts.Config.Images.LogoSizes[size] + provider.LogoPath
+				p.Results[regionCode].Flatrate[i].LogoPath = path
+			}
+		}
 	}
 }

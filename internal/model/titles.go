@@ -20,53 +20,6 @@ type TitleResponse struct {
 	Results []Title `json:"results"`
 }
 
-type Genre struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type ProductionCompany struct {
-	ID            int    `json:"id"`
-	LogoPath      string `json:"logo_path"`
-	OriginCountry string `json:"origin_country"`
-}
-
-type Video struct {
-	ISOLang639  string `json:"iso_639_1"`
-	ISOLang3166 string `json:"iso_3166_1"`
-	Name        string `json:"name"`
-	Key         string `json:"key"`
-	Site        string `json:"site"`
-	Size        int    `json:"size"`
-	Type        string `json:"type"`
-	Official    bool   `json:"official"`
-	PublishedAt string `json:"published_at"`
-	ID          string `json:"id"`
-}
-
-type Credit struct {
-	ProfilePath string `json:"profile_path"`
-	// Gender      string `json:"gender"`
-	KnownForDepartment string `json:"known_for_department"`
-	Name               string `json:"name"`
-	// OriginalName       string  `json:"original_name"`
-	// Popularity         float32 `json:"popularity"`
-	Character string `json:"character"`
-	// Order              int     `json:"order"`
-	// ID                 int     `json:"id"`
-	// CastID             int     `json:"cast_id"`
-	// CreditID           int     `json:"credit_id"`
-	// Adult              bool    `json:"adult"`
-}
-type Credits struct {
-	ID   int      `json:"id"`
-	Cast []Credit `json:"cast"`
-	// Crew []Credit `json:"crew"`
-}
-type Videos struct {
-	ID      int     `json:"id"`
-	Results []Video `json:"results"`
-}
 type TitleDetails struct {
 	BelongsToCollection struct {
 		ID           int    `json:"id"`
@@ -90,4 +43,5 @@ type TitleDetails struct {
 	VoteCount           int                 `json:"vote_count"`
 	Videos              Videos              `json:"videos"`
 	Credits             Credits             `json:"credits"`
+	WatchProviders      WatchProviders      `json:"watch/providers"`
 }
