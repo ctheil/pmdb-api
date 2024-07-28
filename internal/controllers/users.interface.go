@@ -1,10 +1,7 @@
 package controllers
 
-import (
-	"github.com/gin-gonic/gin"
-)
-
-type UserControllerInterface interface {
-	InsertUser(c *gin.Context)
-	GetUser(c *gin.Context)
-}
+// type UserControllerInterface interface {
+// 	InsertUser(c *gin.Context)
+// 	GetUser(c *gin.Context)
+//   Login(c *gin.Conext)
+// }

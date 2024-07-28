@@ -23,7 +23,8 @@ services:
       - 8080:8080
     restart: always
     volumes:
-      - api_volume:/usr/src/app/
+      # - api_volume:/usr/src/app/
+      - ./:/app
     depends_on:
       - postgres
     networks:

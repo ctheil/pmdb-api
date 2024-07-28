@@ -1,17 +1,17 @@
 package routes
 
 import (
-	"database/sql"
-
 	"github.com/ctheil/pmdb-api/internal/controllers"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 )
 
-func UserRoutes(router *gin.RouterGroup, db *sql.DB) {
-	uc := controllers.NewUserController(db)
+func UserRoutes(router *gin.RouterGroup, tx *sqlx.Tx) {
+	uc := controllers.NewUserController(tx)
 	r := router.Group("/auth")
 	{
 		r.GET("/user/:id", uc.GetUser)
 		r.POST("/user", uc.InsertUser)
+		r.POST("/login", uc.Login)
 	}
 }
