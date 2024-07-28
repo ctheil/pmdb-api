@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	model "github.com/ctheil/pmdb-api/internal/model"
+	"github.com/ctheil/pmdb-api/internal/model"
 )
 
 type UserRespoitory struct {
@@ -16,43 +16,34 @@ func NewUserRepository(db *sql.DB) UserRepositoryInterface {
 }
 
 func (u *UserRespoitory) InsertUser(post model.PostUser) bool {
-	stmt, err := u.DB.Prepare(`INSERT INTO users (username, hashed_pw) VALUES ($1, $2)`)
+	stmt, err := u.DB.Prepare(`INSERT INTO users (username, hashed_pw, refresh_token_version) VALUES ($1, $2, $3)`)
 	if err != nil {
 		log.Println(err)
 		return false
 	}
 	defer stmt.Close()
-	_, err2 := stmt.Exec(post.Username, post.HashedPW)
-	if err2 != nil {
-		log.Println(err2)
+	_, err = stmt.Exec(post.Username, post.HashedPW, post.RefreshTokenVersion)
+	if err != nil {
+		log.Println(err)
 		return false
 	}
-
 	return true
 }
 
-func (u *UserRespoitory) SelectUser(n string) []model.User {
-	var results []model.User
-
-	rows, err := u.DB.Query("SELECT * FROM users")
-	if err != nil {
-		log.Println(err)
-		return nil
+func (u *UserRespoitory) SelectUserByID(id string) (model.User, error) {
+	user := model.User{}
+	row := u.DB.QueryRow("SELECT * FROM users WHERE id = ($1)", id)
+	if err := row.Scan(&user); err != nil {
+		return user, err
 	}
+	return user, nil
+}
 
-	for rows.Next() {
-		var (
-			id        uint
-			username  string
-			hashed_pw string
-		)
-		err := rows.Scan(&id, &username, &hashed_pw)
-		if err != nil {
-			log.Println(err)
-		} else {
-			user := model.User{Id: id, Username: username, HashedPW: hashed_pw}
-			results = append(results, user)
-		}
+func (u *UserRespoitory) SelectUserByUsername(username string) (model.User, error) {
+	user := model.User{}
+	row := u.DB.QueryRow("SELECT * FROM users WHERE username = ($1)", username)
+	if err := row.Scan(&user); err != nil {
+		return user, err
 	}
-	return results
+	return user, nil
 }
