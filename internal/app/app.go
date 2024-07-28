@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/ctheil/pmdb-api/internal/config"
+	"github.com/ctheil/pmdb-api/internal/middleware"
 	"github.com/ctheil/pmdb-api/internal/routes"
 	"github.com/gin-gonic/gin"
 )
@@ -28,8 +29,10 @@ func (a *App) CreateRoutes() {
 	r := gin.Default()
 
 	v1 := r.Group("/v1")
+	r.Use(middleware.CORS())
 	{
-		routes.MovieRoutes(v1)
+		routes.TitleRoutes(v1)
+		routes.UserRoutes(v1, a.DB)
 	}
 
 	a.Routes = r
