@@ -13,7 +13,7 @@ func main() {
 	}
 	var a app.App
 	a.CreateConnection()
-	a.Migrate()
+	// a.Migrate()
 	a.CreateRoutes()
 	a.Run()
 }

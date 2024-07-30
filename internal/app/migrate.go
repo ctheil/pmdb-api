@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -9,6 +10,7 @@ import (
 )
 
 func (a *App) Migrate() {
+	fmt.Println("\n\n\n### ### ### MIGRATE ### ### ###\n\n\n")
 	driver, err := postgres.WithInstance(a.DB.DB, &postgres.Config{})
 	if err != nil {
 		log.Println(err)
@@ -21,4 +23,5 @@ func (a *App) Migrate() {
 	if err := m.Steps(2); err != nil {
 		log.Println(err)
 	}
+	fmt.Println("\n\n\n### ### ### MIGRATION FINISHED ### ### ###\n\n\n")
 }

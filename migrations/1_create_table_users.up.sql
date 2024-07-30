@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users(
   id BIGSERIAL NOT NULL PRIMARY KEY, 
   username VARCHAR(255) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
   hashed_pw VARCHAR(255) NOT NULL, 
   refresh_token_version INT NOT NULL 
 );

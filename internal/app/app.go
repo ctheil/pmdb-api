@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/ctheil/pmdb-api/internal/config"
 	"github.com/ctheil/pmdb-api/internal/middleware"
@@ -30,11 +31,15 @@ func (a *App) CreateConnection() {
 
 func (a *App) CreateRoutes() {
 	r := gin.Default()
-
-	v1 := r.Group("/v1")
 	r.Use(middleware.CORS())
+
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "hello world"})
+	})
+	v1 := r.Group("/v1")
 	{
 		routes.TitleRoutes(v1)
+		routes.AuthRoutes(v1, a.TX)
 		routes.UserRoutes(v1, a.TX)
 	}
 
