@@ -19,9 +19,11 @@ type App struct {
 }
 
 func (a *App) CreateConnection() {
+	// NOTE: without sqlx ORM:
 	// connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", config.UNAMEDB, config.PASSDB, config.HOSTDB, config.DBNAME)
-	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%s dbname=%s password=%s host=%s  sslmode=disable", config.UNAMEDB, config.DBNAME, config.PASSDB, config.HOSTDB))
 	// db, err := sql.Open("postgres", connStr)
+
+	db, err := sqlx.Connect("postgres", fmt.Sprintf("user=%s dbname=%s password=%s host=%s  sslmode=disable", config.UNAMEDB, config.DBNAME, config.PASSDB, config.HOSTDB))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,6 +42,7 @@ func (a *App) CreateRoutes() {
 	{
 		routes.TitleRoutes(v1)
 		routes.AuthRoutes(v1, a.TX)
+		routes.OAuthRoutes(v1, a.TX)
 		routes.UserRoutes(v1, a.TX)
 	}
 

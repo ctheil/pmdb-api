@@ -13,6 +13,5 @@ func AuthRoutes(router *gin.RouterGroup, tx *sqlx.Tx) {
 		r.POST("/login", ac.Login)
 		// r.POST("/signup", middleware.AuthenticateTokens(tx), ac.Signup) // PROTECT
 		r.POST("/signup", ac.Signup)
-
 	}
 }

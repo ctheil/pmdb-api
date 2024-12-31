@@ -122,6 +122,20 @@ func NewRefreshToken(user model.User, user_repo *repository.UserRespoitory) (str
 	return signedRefreshToken, nil
 }
 
+func ClearTokenCookie(c *gin.Context, name string) {
+	env := os.Getenv("ENV")
+	prod := env == "Production"
+	httpOnly := true
+	secure := env == "Production"
+	path := "/"
+	domain := "https://pmdb.com"
+	if !prod {
+		domain = ""
+	}
+
+	c.SetCookie(name, "", 0, path, domain, secure, httpOnly)
+}
+
 func SetTokenCookies(c *gin.Context, accessToken, refreshToken string) {
 	env := os.Getenv("ENV")
 	prod := env == "Production"
@@ -133,6 +147,7 @@ func SetTokenCookies(c *gin.Context, accessToken, refreshToken string) {
 		domain = ""
 	}
 
+	// BUG: maxAge for refreshToken should not be this long...
 	maxAge := int(time.Now().Year() * 10)
 	if accessToken != "" {
 		c.SetCookie("access_token", accessToken, maxAge, path, domain, secure, httpOnly)
