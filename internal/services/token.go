@@ -2,10 +2,35 @@ package services
 
 import (
 	"os"
+	"time"
 
+	"github.com/ctheil/pmdb-api/internal/model"
 	"github.com/golang-jwt/jwt/v5"
 )
 
+//	type Token interface {
+//		IsValid() bool
+//	}
+//
+// type Claims interface{}
+//
+//	type AccessToken struct {
+//		Token  string
+//		Claims *services.UserClaims
+//	}
+type AccessToken struct {
+	Token  string
+	Claims *UserClaims
+}
+
+type Token interface {
+	isValid() bool
+}
+type RefreshToken struct {
+	Token  string
+	User   model.User
+	Claims *RefreshClaims
+}
 type UserClaims struct {
 	Id       uint   `json:"id"`
 	Username string `json:"username"`
@@ -76,4 +101,8 @@ func (t *TokenService) NewOAuthUserToken(currentClaims *OAuthUserClaims) (string
 	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, currentClaims)
 
 	return newToken.SignedString([]byte(t.secret))
+}
+
+func (t *OAuthUserClaims) IsValid() bool {
+	return t.ExpiresAt.After(time.Now())
 }

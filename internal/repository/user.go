@@ -13,6 +13,43 @@ import (
 type UserRespoitory struct {
 	TX *sqlx.Tx
 }
+type OAuthUserRepository struct {
+	TX *sqlx.Tx
+}
+
+func NewOAuthUserRepository(tx *sqlx.Tx) *OAuthUserRepository {
+	return &OAuthUserRepository{TX: tx}
+}
+
+func (u *OAuthUserRepository) Insert(post model.OAuthUser) (id int64, ok bool) {
+	id = 0
+	res, err := u.TX.NamedExec("insert into users (id, name, email, picture, refresh_token_version) VALUES (:id, :name,:email,:picture,:refresh_token_version", &post)
+	if err != nil {
+		fmt.Printf("error inserting oauth user: %e", err)
+		return id, false
+	}
+	id, err = res.LastInsertId()
+	if err != nil {
+		fmt.Printf("error retriving the last inserted id: %e", err)
+		return id, false
+	}
+
+	return id, true
+}
+
+func (u *OAuthUserRepository) GetRefreshTokenVersion(id uint) (uint, bool) {
+	user := model.OAuthUser{}
+	if err := u.TX.Get(&user, "SELECT refresh_token_version FROM oauth_users WHERE id=$1", id); err != nil {
+		return 0, false
+	}
+	return user.RefreshTokenVersion, true
+}
+
+func (u *OAuthUserRepository) UpdateField(user model.OAuthUser, field string, value any) error {
+	query := fmt.Sprintf("UPDATE oauth_users SET %s = $1 WHERE id = $2", field)
+	_, err := u.TX.Exec(query, value, user.Id)
+	return err
+}
 
 func NewUserRepository(tx *sqlx.Tx) *UserRespoitory {
 	return &UserRespoitory{TX: tx}

@@ -72,15 +72,6 @@ func GetCFG() (CFG, error) {
 	return *cfg, nil
 }
 
-// const getTokenParams = (code) =>
-//
-//	queryString.stringify({
-//	  client_id: config.clientId,
-//	  client_secret: config.clientSecret,
-//	  code,
-//	  grant_type: 'authorization_code',
-//	  redirect_uri: config.redirectUrl,
-//	})
 type OAuthParams struct {
 	client_id     string
 	redirect_uri  string
@@ -157,11 +148,18 @@ func (a *OAuth) FetchAuthToken(code string) (*OAuthUserClaims, error) {
 	return user, nil
 }
 
-func (a *OAuth) VerifyToken(c *gin.Context) (newToken string, error error) {
+func (a *OAuth) VerifyToken(c *gin.Context) (newToken string, ok bool) {
 	accessToken, err := c.Cookie("access_token")
 	if err != nil {
-		return "", fmt.Errorf("no access token found in request")
+		// fmt.Errorf("no access token found in request")
+		return "", false
 	}
 	user_claims := a.TS.ParseOAuthUserToken(accessToken)
-	return a.TS.NewOAuthUserToken(user_claims)
+	isValid := user_claims.ExpiresAt.After(time.Now())
+	token, err := a.TS.NewOAuthUserToken(user_claims)
+	if err != nil {
+		return "", false
+	}
+	fmt.Printf("token: %s, isValid: %t\n", token, isValid)
+	return token, isValid
 }

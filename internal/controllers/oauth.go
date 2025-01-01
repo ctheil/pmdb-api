@@ -67,8 +67,8 @@ func (a *OAuthController) GetAuthToken(c *gin.Context) {
 }
 
 func (a *OAuthController) GetLoggedIn(c *gin.Context) {
-	newToken, err := a.OAuth.VerifyToken(c)
-	if err != nil {
+	newToken, ok := a.OAuth.VerifyToken(c)
+	if !ok {
 		log.Print("Either missing token or no user data in token.")
 		c.JSON(http.StatusOK, gin.H{"message": "No user data found in token, or no token provided", "loggedIn": false})
 		return

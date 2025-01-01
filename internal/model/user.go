@@ -14,3 +14,18 @@ type PostUser struct {
 	Email               string `json:"email" db:"email"`
 	RefreshTokenVersion int    `json:"refresh_token_version" db:"refresh_token_version"`
 }
+
+type OAuthUser struct {
+	Id                  uint   `json:"id" db:"id"`
+	Name                string `json:"name" db:"name"`
+	Email               string `json:"email" db:"email"`
+	Picture             string `json:"picture" db:"picture"`
+	RefreshTokenVersion uint   `json:"refresh_token_version" db:"refresh_token_version"`
+}
+
+// type PostOAuthUser struct {
+// 	Name                string `json:"name" db:"name"`
+// 	Email               string `json:"email" db:"email"`
+// 	Picture             string `json:"picture" db:"picture"`
+// 	RefreshTokenVersion int    `json:"refresh_token_version" db:"refresh_token_version"`
+// }

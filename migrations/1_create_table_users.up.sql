@@ -5,3 +5,10 @@ CREATE TABLE IF NOT EXISTS users(
   hashed_pw VARCHAR(255) NOT NULL, 
   refresh_token_version INT NOT NULL 
 );
+
+CREATE TABLE IF NOT EXISTS oauth_users(
+  id BIGSERIAL NOT NULL PRIMARY KEY, 
+  name VARCHAR(255) NOT NULL, 
+  email VARCHAR(255) NOT NULL UNIQUE, 
+  refresh_token_version INT NOT NULL
+)

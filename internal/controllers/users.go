@@ -23,6 +23,5 @@ func (u *UserController) GetUser(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "unauthenticated hello world!"})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "authenticated hello world!"})
 }
