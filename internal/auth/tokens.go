@@ -30,6 +30,8 @@ type RefreshToken struct {
 	Claims *services.RefreshClaims
 }
 
+var token_service = services.NewTokenService()
+
 func ParseAccessToken(token string) (*AccessToken, error) {
 	if token == "" {
 		return &AccessToken{}, fmt.Errorf("no access token provided")
@@ -37,7 +39,7 @@ func ParseAccessToken(token string) (*AccessToken, error) {
 
 	return &AccessToken{
 		Token:  token,
-		Claims: services.ParseAccessToken(token),
+		Claims: token_service.ParseAccessToken(token),
 	}, nil
 }
 
@@ -48,7 +50,7 @@ func ParseRefreshToken(token string, user model.User) (*RefreshToken, error) {
 
 	return &RefreshToken{
 		Token:  token,
-		Claims: services.ParseRefreshToken(token),
+		Claims: token_service.ParseRefreshToken(token),
 		User:   user,
 	}, nil
 }
@@ -96,7 +98,7 @@ func NewAccessToken(username string, id uint) (string, error) {
 		},
 	}
 
-	signedAccessToken, err := services.NewAccessToken(userClaims)
+	signedAccessToken, err := token_service.NewAccessToken(userClaims)
 	if err != nil {
 		return "", err
 	}
@@ -113,7 +115,7 @@ func NewRefreshToken(user model.User, user_repo *repository.UserRespoitory) (str
 		},
 	}
 
-	signedRefreshToken, err := services.NewRefreshToken(refreshClaims)
+	signedRefreshToken, err := token_service.NewRefreshToken(refreshClaims)
 	if err != nil {
 		return "", err
 	}

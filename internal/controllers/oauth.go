@@ -26,15 +26,7 @@ func NewOAuthController(tx *sqlx.Tx) *OAuthController {
 }
 
 func (a *OAuthController) GetAuthUrl(c *gin.Context) {
-	oauth, err := services.NewOAuth()
-	if err != nil {
-		fmt.Printf("Error generating oauth config: %s", err)
-
-		log.Fatalf("Failed to generate oauth config: %e", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		return
-	}
-	url := fmt.Sprintf("%s?%s", oauth.CFG.Auth_URL, oauth.GetOAuthParams())
+	url := fmt.Sprintf("%s?%s", a.OAuth.CFG.Auth_URL, a.OAuth.GetOAuthParams())
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully retrieved oauth url", "url": url})
 }
 
@@ -51,14 +43,14 @@ func (a *OAuthController) GetAuthToken(c *gin.Context) {
 		return
 	}
 	// TODO: implement retries via context?
-	oauth_resp, err := a.OAuth.FetchAuth()
+	user_claims, err := a.OAuth.FetchAuthToken(code)
 	if err != nil {
 		fmt.Printf("Error fetching oauth: %e", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not verify authentication via OAuth provider."})
 		return
 	}
-	userData := services.ParseOAuthUserToken(oauth_resp.ID_Token)
-	newToken, err := services.NewOAuthUserToken(userData.UserData, a.OAuth.CFG.Token_Secret)
+	// userData := a.OAuth.TS.ParseOAuthUserToken(oauth_resp.ID_Token)
+	newToken, err := a.OAuth.TS.NewOAuthUserToken(user_claims)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Error generating new oauth token."})
 		return
@@ -71,7 +63,7 @@ func (a *OAuthController) GetAuthToken(c *gin.Context) {
 	*   Use ACCESS/REFRESH token system
 	* */
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully found user.", "user": userData})
+	c.JSON(http.StatusOK, gin.H{"message": "Successfully found user.", "user": user_claims})
 }
 
 func (a *OAuthController) GetLoggedIn(c *gin.Context) {

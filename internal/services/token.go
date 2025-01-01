@@ -12,20 +12,30 @@ type UserClaims struct {
 	jwt.RegisteredClaims
 }
 
-type OAuthUserData struct {
+//	type OAuthUserData struct {
+//		Email   string `json:"email"`
+//		Name    string `json:"name"`
+//		Picture string `json:"picture"`
+//	}
+type OAuthUserClaims struct {
 	Email   string `json:"email"`
 	Name    string `json:"name"`
 	Picture string `json:"picture"`
-}
-type OAuthUserClaims struct {
-	UserData OAuthUserData
 	jwt.RegisteredClaims
 }
 
-func NewAccessToken(claims UserClaims) (string, error) {
+type TokenService struct {
+	secret string
+}
+
+func NewTokenService() *TokenService {
+	return &TokenService{os.Getenv("TOKEN_SECRET")}
+}
+
+func (t *TokenService) NewAccessToken(claims UserClaims) (string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return accessToken.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
+	return accessToken.SignedString([]byte(t.secret))
 }
 
 type RefreshClaims struct {
@@ -33,38 +43,37 @@ type RefreshClaims struct {
 	jwt.RegisteredClaims
 }
 
-func NewRefreshToken(claims RefreshClaims) (string, error) {
+func (t *TokenService) NewRefreshToken(claims RefreshClaims) (string, error) {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return refreshToken.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
+	return refreshToken.SignedString([]byte(t.secret))
 }
 
-func ParseAccessToken(accessToken string) *UserClaims {
+func (t *TokenService) ParseAccessToken(accessToken string) *UserClaims {
 	parsedAccessToken, _ := jwt.ParseWithClaims(accessToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
+		return []byte(t.secret), nil
 	})
 
 	return parsedAccessToken.Claims.(*UserClaims)
 }
 
-func ParseRefreshToken(refreshToken string) *RefreshClaims {
+func (t *TokenService) ParseRefreshToken(refreshToken string) *RefreshClaims {
 	parsedRefreshToken, _ := jwt.ParseWithClaims(refreshToken, &RefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
+		return []byte(t.secret), nil
 	})
 
 	return parsedRefreshToken.Claims.(*RefreshClaims)
 }
 
-func ParseOAuthUserToken(oauthToken string) *OAuthUserClaims {
+func (t *TokenService) ParseOAuthUserToken(oauthToken string) *OAuthUserClaims {
 	parsedOauthToken, _ := jwt.ParseWithClaims(oauthToken, &OAuthUserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
+		return []byte(t.secret), nil
 	})
 	return parsedOauthToken.Claims.(*OAuthUserClaims)
 }
 
-func NewOAuthUserToken(user OAuthUserData, secret string) (string, error) {
-	claims := OAuthUserClaims{UserData: user}
-	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func (t *TokenService) NewOAuthUserToken(currentClaims *OAuthUserClaims) (string, error) {
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, currentClaims)
 
-	return newToken.SignedString([]byte(secret))
+	return newToken.SignedString([]byte(t.secret))
 }

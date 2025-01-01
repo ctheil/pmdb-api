@@ -14,6 +14,7 @@ import (
 
 type OAuth struct {
 	CFG *CFG
+	TS  *TokenService
 }
 
 func NewOAuth() (*OAuth, error) {
@@ -21,7 +22,7 @@ func NewOAuth() (*OAuth, error) {
 	if err != nil {
 		return &OAuth{}, err
 	}
-	return &OAuth{&cfg}, nil
+	return &OAuth{CFG: &cfg, TS: NewTokenService()}, nil
 }
 
 type CFG struct {
@@ -108,12 +109,27 @@ func (a *OAuth) GetOAuthParams() string {
 	return vals.Encode()
 }
 
+func (a *OAuth) GetOAuthTokenParams(code string) string {
+	params := map[string]string{
+		"code":          code,
+		"grant_type":    "authorization_code",
+		"client_secret": a.CFG.Client_Secret,
+		"redirect_uri":  a.CFG.Redirect_URL,
+		"client_id":     a.CFG.Client_ID,
+	}
+	vals := url.Values{}
+	for k, v := range params {
+		vals.Add(k, v)
+	}
+	return vals.Encode()
+}
+
 type OAuthResp struct {
 	ID_Token string `json:"id_token"`
 }
 
-func (a *OAuth) FetchAuth() (*OAuthResp, error) {
-	req_url := fmt.Sprintf("%s?%s", a.CFG.Auth_URL, a.GetOAuthParams())
+func (a *OAuth) FetchAuthToken(code string) (*OAuthUserClaims, error) {
+	req_url := fmt.Sprintf("%s?%s", a.CFG.Token_URL, a.GetOAuthTokenParams(code))
 	req, err := http.NewRequest("POST", req_url, nil)
 	if err != nil {
 		return nil, err
@@ -125,22 +141,20 @@ func (a *OAuth) FetchAuth() (*OAuthResp, error) {
 		return nil, err
 	}
 
-	fmt.Printf("\n\n    OAuth fetch request: %+v\n\n    Body: %s\n\n    Original Endpoint: %s\n\n", resp, resp.Body, req_url)
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to fetch oauth data: %s", resp.Status)
 	}
 
 	oauth_resp := OAuthResp{}
-	result := map[string]string{}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&oauth_resp); err != nil {
 		fmt.Printf("Error decoding oauth into json: %e\n\n", err)
 		return nil, err
 	}
-	fmt.Printf("JSON result: %+v", result)
 
-	return &oauth_resp, nil
+	user := a.TS.ParseOAuthUserToken(oauth_resp.ID_Token)
+
+	return user, nil
 }
 
 func (a *OAuth) VerifyToken(c *gin.Context) (newToken string, error error) {
@@ -148,6 +162,6 @@ func (a *OAuth) VerifyToken(c *gin.Context) (newToken string, error error) {
 	if err != nil {
 		return "", fmt.Errorf("no access token found in request")
 	}
-	user_claims := ParseOAuthUserToken(accessToken)
-	return NewOAuthUserToken(user_claims.UserData, a.CFG.Token_Secret)
+	user_claims := a.TS.ParseOAuthUserToken(accessToken)
+	return a.TS.NewOAuthUserToken(user_claims)
 }
